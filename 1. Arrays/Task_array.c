@@ -1,5 +1,4 @@
-#include <stdio.h>
-#define N 15
+#define N 5
 
 void print_task1(int arr_target[N][N]) {
   for (int i = 0; i < N; i++) {
@@ -18,6 +17,7 @@ void print_task2(int arr_target[N]) {
 }
 
 void task1() {
+  printf("task 1:\n");
   int array_size_n[N][N];  // Array size of N
   int counter = 1;
   for (int i = 0; i < N; i++) {
@@ -29,6 +29,7 @@ void task1() {
 }
 
 void task2() {
+  printf("task 2:\n");
   int array_size_n[N];  // Array size of N
   int array_temp[N];    // Temporary array
   for (int i = 0; i < N; i++) {
@@ -44,6 +45,7 @@ void task2() {
 }
 
 void task3() {
+  printf("task 3:\n");
   int array_size_n[N][N] = {0};  // Array size of N
   int count = N;
   for (int i = 0; i < N; i++) {
@@ -56,11 +58,8 @@ void task3() {
 }
 
 int main() {
-  printf("task 1:\n");
   task1();
-  printf("task 2:\n");
   task2();
-  printf("task 3:\n");
   task3();
   return 0;
 }
