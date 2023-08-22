@@ -1,15 +1,14 @@
 .gitignore.txt
 .vscode/
-makefile
 
 # Prerequisites
-*.d
+.d
 
 # Object files
-*.o
-*.ko
-*.obj
-*.elf
+.o
+.ko
+.obj
+.elf
 
 # Linker output
 *.ilk
@@ -33,12 +32,12 @@ makefile
 *.dylib
 
 # Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+.exe
+.out
+.app
+.i*86
+.x86_64
+.hex
 
 # Debug files
 *.dSYM/
@@ -52,5 +51,4 @@ makefile
 .tmp_versions/
 modules.order
 Module.symvers
-Mkfile.old
 dkms.conf
