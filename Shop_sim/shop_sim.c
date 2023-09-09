@@ -77,7 +77,7 @@ void *buyer(void *arg){
     int target_store = rand() % STORES_QUANTITY;                //  Целевой магаз выбираем рандомом
     if (stores[target_store] > 0){
       pthread_mutex_lock(&mutex[target_store]);                 //  Лок мьютекса для целевого магазина
-      printf("Покупатель ( %d ) : %d  -->  ", buyers_list->id, buyers_list->need);
+      printf("Покупатель ( %d ) Магазин (%d) : %d  -->  ", buyers_list->id, target_store, buyers_list->need);
       buyers_list->need -= stores[target_store];                //  Удовлетворяем нужды покупателя
       stores[target_store] = 0;                                 //  Обнуляем ассортимент
       printf("%d\n", buyers_list->need);
