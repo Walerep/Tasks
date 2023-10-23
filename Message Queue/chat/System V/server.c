@@ -1,13 +1,3 @@
-#include <stdio.h>    //  perror printf
-#include <stdlib.h>   //  exit
-#include <string.h>   //  strcpy
-#include <sys/ipc.h>  //  ftok
-#include <sys/msg.h>  //  msgsnd
-#include <unistd.h>   //  getpid
-// #include <sys/sem.h>    //
-// #include <sys/types.h>  //
-#include <errno.h>    //  perror
-#include <pthread.h>  //  pthread_create
 #include "header.h"
 
 #define err_exit(msg)   \
@@ -17,26 +7,26 @@
   } while (0)
 
 struct client clients[MAX_USERS];
-int num_clients = 0;
+int num_clients = -1;
 int server_msgqid;
 
-void *client_handler(void *arg) {
-  struct client *client = (struct client *)arg;
+void *client_handler(void * client_i) {
+  struct client *client = (struct client *)client_i;
   struct message msg;
   printf("clients -------\n");
-  for (int i = 0; i < num_clients; i++)
+  for (int i = 0; i <= num_clients; i++)
   {
-    printf("%s\n", clients[i].name);
+    printf("(%ld) %s\n",clients[i].id, clients[i].name);
   }
   printf("---------------\n");
   
   // Отправляем приветственное сообщение клиенту
-  strcpy(msg.mtext, "Добро пожаловать в чат!\n\0");
-  msg.mtype = client->id;
-  printf("id: %ld\n",msg.mtype);
-  if (msgsnd(client->id, &msg, sizeof(struct message), 0) == -1) {
-    err_exit("msgsnd: Приветствие не отправленно");
-  }
+  //strcpy(msg.mtext, "Welcome to chat!\n");
+  //msg.mtype = SERVICE_MSG;
+  //printf("client_handler client id: %ld\n",client.id);
+  //if (msgsnd(client.id, &msg, sizeof(struct message), 0) == -1) {
+  //  err_exit("msgsnd: Приветствие не отправленно");
+  //}
   
   while (1) {
     // Получаем сообщение от клиента
@@ -45,52 +35,65 @@ void *client_handler(void *arg) {
     }
 
     // Проверяем, является ли сообщение запросом на получение списка активных
-    // пользователей
-    if (strcmp(msg.mtext, "get_users") == 0) {
+    // пользователейmtext
+    switch (msg.mtype)
+    {
+    case GET_USERS_MSG:
       // Отправляем список активных пользователей клиенту
       char user_list[MAX_MSG] = "";
-      for (int i = 0; i < num_clients; i++) {
+      for (int i = 0; i <= num_clients; i++) {
         strcat(user_list, clients[i].name);
         strcat(user_list, "\n");
       }
       strcpy(msg.mtext, user_list);
+      msg.mtype = GET_USERS_MSG;
+      printf("client-handler client msg mtype (id): %ld\n",msg.mtype);
+      printf("sending userlist: %s\n",msg.mtext);
       if (msgsnd(client->id, &msg, sizeof(struct message) - sizeof(long),
                  0) == -1) {
         err_exit("msgsnd get_users");
       }
-    }
+      break;
     // Проверяем, является ли сообщение запросом на отправку сообщения всем
     // пользователям
-    else if (strcmp(msg.mtext, "send_all ") == 0) {
-      // Отправляем сообщение всем клиентам
+    case SEND_ALL_MSG:
+    // Отправляем сообщение всем клиентам
       printf("Получен запрос на отправку всем клиентам\n");
-      strcpy(msg.mtext, "Введите сообщение: ");
-      if (msgsnd(client->id, &msg, sizeof(struct message) - sizeof(long),
+      /*
+      strcpy(msg.mtext, "Enter message: ");
+      msg.mtype = SERVICE_MSG;
+      printf("client-handler client msg mtype : %ld\n",msg.mtype);
+      if (msgsnd(client.id, &msg, sizeof(struct message) - sizeof(long),
                  0) == -1) {
         err_exit("msgsnd send_all");
       }
-      if (msgrcv(client->id, &msg, sizeof(struct message), client->id, 0) == -1) {
+      if (msgrcv(client.id, &msg, sizeof(struct message), SEND_ALL_MSG, 0) == -1) {
         err_exit("msgrcv send_all");
       }
-      printf("Полученно : %s\n", msg.mtext);
-      //sscanf(msg.mtext, "send_all %s", msg.mtext);
-      //printf("Выделено: %s\n", msg.mtext);
+      printf("Полученно в SEND_ALL : %s\n", msg.mtext);
+      sscanf(msg.mtext, "send_all %s", msg.mtext);
+      printf("Выделено: %s\n", msg.mtext);
+      */
+      msg.mtype = SEND_ALL_MSG;
+      printf("client-handler client msg mtype : %ld\n",msg.mtype);
       for (int i = 0; i < num_clients; i++) {
         if (msgsnd(clients[i].id, &msg, sizeof(struct message) - sizeof(long), 0) == -1) {
           err_exit("msgsnd send_all");
         }
       }
-    }
+      break;
     // Проверяем, является ли сообщение запросом на отправку сообщения
     // конкретному пользователю
-    else if (strncmp(msg.mtext, "send ", 5) == 0) {
-      // Извлекаем имя пользователя из сообщения
+    case SEND_MSG:
+    // Извлекаем имя пользователя из сообщения
       char recipient_name[MAX_MSG];
       sscanf(msg.mtext, "send %s", recipient_name);
 
       printf("Получен запрос на отправку клиенту\n");
-      strcpy(msg.mtext, "Введите имя получателя: ");
+      strcpy(msg.mtext, "Enter reciver name: ");
       //  Отправляем ответ на запрос
+      msg.mtype = SERVICE_MSG;
+      printf("client-handler client msg mtype (id): %ld\n",msg.mtype);
       if (msgsnd(client->id, &msg, sizeof(struct message) - sizeof(long),
                  0) == -1) {
         err_exit("msgsnd send_all");
@@ -117,6 +120,8 @@ void *client_handler(void *arg) {
         printf("Получатель найден\n");
         strcpy(msg.mtext, "ACCEPT");
         //  Отправляем подтверждение существования получателя
+        msg.mtype = SERVICE_MSG;
+        printf("client-handler client msg mtype (id): %ld\n",msg.mtype);
         if (msgsnd(client->id, &msg, sizeof(struct message) - sizeof(long),
                  0) == -1) {
         err_exit("msgsnd send_all");
@@ -128,22 +133,28 @@ void *client_handler(void *arg) {
         printf("Полученно : %s\n", msg.mtext);
         
         //  Отправляем сообщение
-        msg.mtype = recipient_id;
+        msg.mtype = SERVICE_MSG;
+        printf("client-handler client msg mtype (id): %ld\n",msg.mtype);
         if (msgsnd(clients[recipient_id].id, &msg,
                    sizeof(struct message) - sizeof(long), 0) == -1) {
           err_exit("msgsnd send");
         }
       }
-    }
+    break;
     // Проверяем, является ли сообщение запросом на отключение от чата
-    else if (strcmp(msg.mtext, "quit") == 0) {
-      printf("Получен запрос на отключение\n");
+    case QUIT_MSG:
+    printf("Получен запрос на отключение\n");
       // Удаляем клиента из списка активных пользователей
       for (int i = 0; i < num_clients; i++) {
-        if (clients[i].id == msg.mtype) {
+        if (clients[i].id == msg.id) {
           for (int j = i; j < num_clients - 1; j++) {
             clients[j] = clients[j + 1];
           }
+          if (msgctl(msg.id, IPC_RMID, NULL) == -1) {
+            perror("msgctl_user");
+            exit(1);
+          }
+          else printf("Очередь клиента %ld удалена\n", msg.id);
           num_clients--;
           break;
         }
@@ -160,26 +171,21 @@ void *client_handler(void *arg) {
       }
       */
       break;
+    break;
+    default:
+      break;
     }
-    if (num_clients == 0)
-    {
-      printf("Клинетов не осталось\n");
-      pthread_exit(NULL);
-    }
-    
   }
 
   pthread_exit(NULL);
 }
 
-int main(int argc, const char **argv) {
-  printf("server\n");
-  key_t key;
-  pthread_t tid;
-  struct message msg;
 
+void *server_startup(){
+  key_t key;
+  struct message msg;
   // Генерируем уникальный ключ
-  key = ftok("server.c", 3);
+  key = ftok(FTOK_PATH, 3);
 
   // Создаем очередь сообщений сервера
   server_msgqid = msgget(key, IPC_CREAT | 0666);
@@ -187,62 +193,73 @@ int main(int argc, const char **argv) {
   printf("msqid %d\n", server_msgqid);
   printf("Сервер чата запущен.\n");
 
-  while (1) {
-    // Принимаем запрос на регистрацию клиента
-    if (msgrcv(server_msgqid, &msg, sizeof(struct message), 2, 0) == -1) {
-      err_exit("msgrcv registration");
-    }
-    /*
-    printf("Получено\n");
-        printf("msqid %d\n", server_msgqid);
-        printf("type %ld\n", msg.mtype);
-        printf("id %d\n", msg.id);
-        printf("text %s\n", msg.mtext);
-    */
+  // Принимаем запрос на регистрацию клиента
+  while (msgrcv(server_msgqid, &msg, sizeof(struct message), REGISTER_MSG, 0))
+  {
     // Проверяем, является ли сообщение запросом на регистрацию
-    if (strncmp(msg.mtext, "register ", 9) == 0) {
+    if (msg.mtype != REGISTER_MSG) printf("Not registration type");
       // Извлекаем имя клиента из сообщения
       printf("Запрос регистрации\n");
-      char client_name[MAX_MSG];
-      sscanf(msg.mtext, "register %s", client_name);
-
-      //  Извлекаем id клиента из сообщения
-      //int client_id = msg.id;
+      char client_name[MAX_USERNAME];
+      strcpy(client_name, msg.muser);
+      printf("nicname %s\n", client_name);
 
       // Создаем новую очередь сообщений для клиента
-      
+      msg.id = msgget(IPC_PRIVATE, IPC_CREAT | 0666);
+      printf("Generated id for user : %ld\n", msg.id);
       // Добавляем клиента в список активных пользователей
-      struct client new_client;
-      new_client.id = msg.id;   //  id очереди клиента
-      strcpy(new_client.name, client_name);
-      //new_client.msgqid = client_msgqid;
-      //clients[num_clients++] = new_client;  // запись клиента в список
-      memcpy(&clients[num_clients++], &new_client, sizeof(struct client));
+      //struct client new_client;
+      num_clients++;
+      clients[num_clients].id = msg.id;   //  id очереди клиента
+      strcpy(clients[num_clients].name, client_name);
+      //clients[num_clients] = new_client;
+      printf("Client %d\n", num_clients);
+      printf("server_startup clients id: %ld\n", clients[num_clients].id);
+      printf("name: %s\n", clients[num_clients].name);
+      memset(&msg, 0, sizeof(msg));
       // Отправляем клиенту его ID очереди
+      
 
-      msg.mtype = 1;
-      strcpy(msg.mtext, new_client.name);
+      msg.mtype = REGISTER_MSG;
+      msg.id = clients[num_clients].id;
+      strcpy(msg.muser, clients[num_clients].name);
+      strcpy(msg.mtext, "Welcome to chat");
+
+
       printf("отправка\n");
-      //printf("client_msqid %d\n", client_msgqid);
-      //printf("type %ld\n", msg.mtype);
-      printf("id %d\n", msg.id);
-      //printf("text %s\n", msg.mtext);
-      if (msgsnd(msg.id, &msg, sizeof(struct message) - sizeof(long),
-                 0) == -1) {
+      printf("sending msg id %ld\n", msg.id);
+      printf("to user : %s\n", msg.muser);
+      printf("as type : %ld\n", msg.mtype);
+      if (msgsnd(server_msgqid, &msg, sizeof(struct message), 0) == -1) {
         err_exit("msgsnd id_send");
       }
-
-      // Создаем новый поток для обработки сообщений клиента
-      pthread_create(&tid, NULL, client_handler, (void *)&new_client);
-    }
+      //msgctl(server_msgqid, IPC_RMID, NULL);
+      memset(&msg, 0, sizeof(struct message));
+      //client_handler(clients[num_clients]);
+      pthread_t tid[MAX_USERS];
+      pthread_create(&tid[num_clients], NULL, client_handler, (void*) &clients[num_clients]);
   }
+  
+  
+}
 
+int main() {
+  printf("server\n");
+  //key_t key;
+  pthread_t tid;
+  //struct message msg;
+
+  // Создаем новый поток для обработки сообщений клиента
+  pthread_create(&tid, NULL, server_startup, NULL);
+  //server_startup();
+  while (getchar() != 'q');
+  pthread_cancel(tid);
+  pthread_join(tid, NULL);
   // Уничтожаем очередь сообщений сервера
   if (msgctl(server_msgqid, IPC_RMID, NULL) == -1) {
-    perror("msgctl");
+    perror("msgctl_server");
     exit(1);
   }
-
   printf("Сервер чата завершен.\n");
 
   return 0;

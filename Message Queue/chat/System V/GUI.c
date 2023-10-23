@@ -1,47 +1,15 @@
-#include <locale.h>
-#include <stdio.h>
-#include <curses.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <dirent.h>
-
-#define err_msg(msg) do {perror(msg); exit(EXIT_FAILURE);} while(0)
-
-#define MAXROW 100
-#define MAXCOL 50
-#define BORDER_OF_MENU 10
-#define LISTING_MAX 128
-
-WINDOW * text_bar_box; // указатель на окно меню
-WINDOW * text_bar;
-WINDOW * chat_window_box;
-WINDOW * chat_window;
-WINDOW * window_box;
-WINDOW * users_window_box;
-WINDOW * users_window;
-
-//  struct for anything in current directory
-struct LISTING
-{
-  int position; // position of smth in that struct
-  char name[128]; //  name of folder  / file in struct
-  unsigned char type; // type of smth in that struct
-};
+#include "GUI.h"
 
 struct LISTING listing[LISTING_MAX]; 
-
+extern struct GUI GUI;
 
 char cmdoutlines[MAXROW][MAXCOL];
-int ncmdlines,    //  Количество строк в cmdoutlines
-    nwinlines,     //  количество строк которое займет вывод ls
-    winrow,       //  текущий ряд (row) на экране
-    cmdstartrow,  //  индекс первого ряда в cmdoutlines для отображения
-    cmdlastrow;   //  индекс последнего ряда в cmdoutlines для отображения
+int   ncmdlines,    //  Количество строк в cmdoutlines
+      nwinlines,    //  количество строк которое займет вывод ls
+      winrow,       //  текущий ряд (row) на экране
+      cmdstartrow,  //  индекс первого ряда в cmdoutlines для отображения
+      cmdlastrow;   //  индекс последнего ряда в cmdoutlines для отображения
+
 
 //  Размер окна по количеству строк и столбцов
 void sig_winch(int signo){ 
@@ -65,58 +33,56 @@ void curses_init(){
   
   initscr();  
   signal(SIGWINCH, sig_winch);  //Размер окна по количеству строк и столбцов
-  keypad(stdscr, TRUE);
+  keypad(GUI.text_bar_box, TRUE);
   cbreak();
   noecho();
   curs_set(1);
   refresh();
 };
-  
-  //  (legacy) Вывод содержимого текущего каталога
-void whats_inside(WINDOW * window, const char * path) {
-  struct dirent * namelist;
-  int i = 1;
-  int index = 0;
-  char * dir_inside[100];
-  DIR * dir = opendir(path);
-  if (dir == NULL) err_msg("opendir");
-  while ((namelist = readdir(dir)) != NULL){
-    dir_inside[i] = namelist->d_name;
-    strncpy(listing[i].name, dir_inside[i], 64);
-    listing[i].type = namelist->d_type;
-    listing[i].position = i;
-    mvwprintw(window, i++, 1, "%d) %s   %d", listing[i].position, listing[i].name, listing[i].type);
-  }
-  
-  closedir(dir);
-}
 
 //  Окно сообщений чата
 void chat_area(){ 
-  chat_window_box = newwin(LINES-BORDER_OF_MENU,COLS/1.5,0,0);
-  //chat_window = derwin(chat_window_box, 1, 0, 1, 2);
+  GUI.chat_window_box = newwin(LINES-BORDER_OF_MENU,COLS/1.5,0,0);
+  //GUI.chat_window = derwin(GUI.chat_window_box, 1, 0, 1, 2);
 
-  whats_inside(chat_window_box, ".");
-
-  box (chat_window_box,'|','-');
-  wrefresh(chat_window_box);
+  box (GUI.chat_window_box,'|','-');
+  wrefresh(GUI.chat_window_box);
 }
 
 //  Окно со списком пользователей
 void users_area(){  
-  users_window_box = newwin(LINES-BORDER_OF_MENU,COLS/2,0,COLS/1.5);
-  whats_inside(users_window_box, ".");
-  box (users_window_box,'|','-');
-  wrefresh(users_window_box);
+  GUI.users_window_box = newwin(LINES-BORDER_OF_MENU,COLS/2,0,COLS/1.5);
+  box (GUI.users_window_box,'|','-');
+  wrefresh(GUI.users_window_box);
 }
 
 // Окно навигации / ввода сообщения
 void text(){  
-  text_bar_box = newwin(0,0,LINES-BORDER_OF_MENU,0);
-  text_bar = derwin(text_bar_box, 1,0,1,2);
-  box(text_bar_box,'|','-');
-  wrefresh(text_bar_box);
+  GUI.text_bar_box = newwin(0,0,LINES-BORDER_OF_MENU,0);
+  //GUI.text_bar = derwin(GUI.text_bar_box, 1,0,1,2);
+  box(GUI.text_bar_box,'|','-');
+  wrefresh(GUI.text_bar_box);
 };
+
+void print_to_win(WINDOW * target_win, int y, int x, const char * format, ...){
+  va_list arg;
+  va_start(arg, format);
+  wmove(target_win, y, x);
+  vwprintw(target_win, format, arg);
+  box(target_win, '|', '-');
+  wrefresh(target_win);
+  va_end(arg);
+}
+
+void read_from_win(WINDOW * target_win, char * format, int n){
+  echo();
+  wclrtobot(target_win);
+  box(target_win, '|', '-');
+  wrefresh(target_win);
+  wgetnstr(target_win, format, n);
+  format[strcspn(format, "\n")] = '\0';
+  noecho();
+}
 
 void navigation(){
   //text();
@@ -145,7 +111,7 @@ void navigation(){
   }
 }
 
-
+/*
 int main(){
   char c;
   curses_init();
@@ -164,3 +130,4 @@ int main(){
   endwin();
   return 0;
 }
+*/
