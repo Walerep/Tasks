@@ -50,7 +50,11 @@ void sig_winch(int signo);  //  Размер окна по количеству 
 void print_to_win(
     WINDOW * target_win, 
     int y, int x, 
-    const char * format, ...); //  Вывод в окно с обновление обводки
+    const char * format, ...); //  Печатать в окно с конца прошлого текста
+void reprint_to_win(
+    WINDOW* target_win, 
+    int y, int x, 
+    const char* format, ...); //  Печать в окно с координат 1, 1 окна
 void read_from_win(
     WINDOW * target_win, 
     char * format, int n); // Чтение строки с окна

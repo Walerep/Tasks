@@ -43,7 +43,7 @@ void *reciver_msg(){
       memset(&msg, 0, sizeof(msg));
       break;
     case GET_USERS_MSG:
-      print_to_win(GUI.users_window_box, 1, 1, "Users online:\n  %s\n", msg.mtext);
+      reprint_to_win(GUI.users_window_box, 1, 2, "Users online:\n  %s", msg.mtext);
       //wrefresh(GUI.users_window_box);
       memset(&msg, 0, sizeof(msg));
       break;
@@ -62,7 +62,7 @@ void *sender(){
   struct message msg;
   int cursor_y, cursor_x; //  кординаты курсора
   while (1) {
-    print_to_win(GUI.text_bar_box, 1, 1,\
+    reprint_to_win(GUI.text_bar_box, 1, 2,\
   "Choose option:\n\
   1. Get users list\n\
   2. Send public message\n\

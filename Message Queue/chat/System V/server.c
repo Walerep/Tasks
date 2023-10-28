@@ -42,8 +42,9 @@ void *client_handler(void * client_i) {
       // Отправляем список активных пользователей клиенту
       char user_list[MAX_MSG] = "";
       for (int i = 0; i <= num_clients; i++) {
+
         strcat(user_list, clients[i].name);
-        strcat(user_list, "\n");
+        strcat(user_list, "\n  ");
       }
       strcpy(msg.mtext, user_list);
       msg.mtype = GET_USERS_MSG;
@@ -75,8 +76,9 @@ void *client_handler(void * client_i) {
       printf("Выделено: %s\n", msg.mtext);
       */
       msg.mtype = SEND_ALL_MSG;
+      
       printf("client-handler client msg mtype : %ld\n",msg.mtype);
-      for (int i = 0; i < num_clients; i++) {
+      for (int i = 0; i <= num_clients; i++) {
         if (msgsnd(clients[i].id, &msg, sizeof(struct message) - sizeof(long), 0) == -1) {
           err_exit("msgsnd send_all");
         }
@@ -87,7 +89,7 @@ void *client_handler(void * client_i) {
     case SEND_MSG:
     // Извлекаем имя пользователя из сообщения
       char recipient_name[MAX_MSG];
-      sscanf(msg.mtext, "send %s", recipient_name);
+      //sscanf(msg.mtext, "send %s", recipient_name);
 
       printf("Получен запрос на отправку клиенту\n");
       strcpy(msg.mtext, "Enter reciver name: ");
@@ -108,7 +110,7 @@ void *client_handler(void * client_i) {
       
       // Ищем получателя в списке активных пользователей
       int recipient_id = -1;
-      for (int i = 0; i < num_clients; i++) {
+      for (int i = 0; i <= num_clients; i++) {
         if (strcmp(clients[i].name, recipient_name) == 0) {
           recipient_id = clients[i].id;
           break;

@@ -42,11 +42,12 @@ void curses_init(){
 
 //  Окно сообщений чата
 void chat_area(){ 
-  GUI.chat_window_box = newwin(LINES-BORDER_OF_MENU,COLS/1.5,0,0);
+  GUI.chat_window_box = newpad(LINES-BORDER_OF_MENU,COLS/1.5);
+  scrollok(GUI.chat_window_box, TRUE);
   //GUI.chat_window = derwin(GUI.chat_window_box, 1, 0, 1, 2);
 
   box (GUI.chat_window_box,'|','-');
-  wrefresh(GUI.chat_window_box);
+  prefresh(GUI.chat_window_box, 0, 0, 0, 0, LINES-BORDER_OF_MENU, COLS/1.5);
 }
 
 //  Окно со списком пользователей
@@ -64,7 +65,19 @@ void text(){
   wrefresh(GUI.text_bar_box);
 };
 
+//  Печатать в окно с конца прошлого текста
 void print_to_win(WINDOW * target_win, int y, int x, const char * format, ...){
+  va_list arg;
+  va_start(arg, format);
+  //wmove(target_win, y, x);
+  vwprintw(target_win, format, arg);
+  box(target_win, '|', '-');
+  wrefresh(target_win);
+  va_end(arg);
+}
+
+//  Печать в окно с координат 1, 1 окна
+void reprint_to_win(WINDOW * target_win, int y, int x, const char * format, ...){
   va_list arg;
   va_start(arg, format);
   wmove(target_win, y, x);
