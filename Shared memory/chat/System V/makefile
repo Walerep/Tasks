@@ -3,8 +3,8 @@ CFLAGS = -Wall
 
 SRCS_SER = server.c 
 SRCS_CLI = client.c GUI.c
-HEAD_SER = header.h
-HEAD_CLI = header.h GUI.h
+HEAD_SER = header.h sem_ftok.h
+HEAD_CLI = header.h GUI.h sem_ftok.h
 OBJS_SER = $(SRCS_SER:.c=.o)
 OBJS_CLI = $(SRCS_CLI:.c=.o)
 TARGET_SER = server

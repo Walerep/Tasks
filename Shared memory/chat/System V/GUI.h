@@ -1,6 +1,5 @@
 #ifndef GUI_H
 #define GUI_H
-//#define HEADER_H
 
 #include <dirent.h>
 #include <ncurses.h>
@@ -12,7 +11,6 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
-#include "header.h"
 
 #define err_msg(msg)    \
   do {                  \

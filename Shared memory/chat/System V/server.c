@@ -1,4 +1,5 @@
 #include "header.h"
+#include "sem_ftok.h"
 
 #define err_exit(msg)   \
   do {                  \
@@ -15,9 +16,6 @@ int server_sem;
 
 int main() {
   printf("server\n");
-  pthread_t tid;
-
-  struct message msg;
 
 
   // Генерируем уникальный ключ

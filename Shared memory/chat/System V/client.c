@@ -1,7 +1,9 @@
 #include <curses.h>
 
-#include "GUI.h"
 #include "header.h"
+#include "GUI.h"
+#include "sem_ftok.h"
+
 
 #define err_exit(msg)   \
   do {                  \
@@ -17,16 +19,15 @@ struct GUI GUI;
 
 //  получение личных \ серверных сообщений
 void *reciver_msg() {
-  while (1) {
-    reprint_to_win(chat_sem, GUI.chat_window_box, 1, 1, "%s\n", chat_addr);
-    reprint_to_win(userlist_sem, GUI.users_window_box, 1, 1, "%s\n", userlist_addr);
-    sleep(2);
+  while (getchar() != 'b') {
+    reprint_to_win(chat_sem, GUI.chat_window_box, 1, 2, "%s\n", chat_addr);
+    reprint_to_win(userlist_sem, GUI.users_window_box, 2, 2, "%s\n", userlist_addr);
+    //sleep(2);
   }
 }
 
 //  отправка сообщений
 void *sender() {
-  int cursor_y, cursor_x;  //  кординаты курсора
   while (1) {
     reprint_to_win(chat_sem, GUI.text_bar_box, 1, 2,
                    "Choose option:\n\
@@ -50,49 +51,40 @@ void *sender() {
     switch (choice) {
       case 1:
         // Отправляем запрос на получение списка активных пользователей
-
+        reciver_msg();
         // Получаем список активных пользователей от сервера
-        // if (msgrcv(client_id, &msg, sizeof(struct message), client_id, 0) ==
-        // -1) {
-        //  err_exit("msgrcv get_users");
-        //}
+
 
         break;
       case 2:
         // Отправляем запрос на отправку сообщения всем пользователям
 
-        char msg_buf[MAX_MSG];
-        print_to_win(chat_sem, GUI.text_bar_box, "Message to everyone:\n");
-        read_from_win(GUI.text_bar_box, msg_buf, MAX_MSG);
-        print_to_addr(chat_addr, chat_sem, msg_buf);
+        char full_msg[MAX_MSG];
+        char msg_buf[MAX_TEXT];
+        strcat(full_msg, Username);
+        reprint_to_win(chat_sem, GUI.text_bar_box, 1, 2, "Message to everyone:\n");
+        read_from_win(GUI.text_bar_box, msg_buf, MAX_TEXT);
+        msg_buf[strcspn(msg_buf, "\0")] = '\n';
+        strcat(full_msg, msg_buf);
+        print_to_addr(chat_addr, chat_sem, full_msg);
 
         break;
       case 3:
 
         //  Отправка запроса
-        if (msgsnd(client_id, &msg, sizeof(struct message), 0) == -1) {
-          err_exit("msgsnd send");
-        }
 
         //  Вводим имя получателя
 
-        print_to_win(GUI.text_bar_box, 1, 1, "Enter reciver name: ");
-        read_from_win(GUI.text_bar_box, msg.mtext, MAX_MSG);
+        reprint_to_win(chat_sem, GUI.text_bar_box, 1, 2, "Enter reciver name: ");
+
 
         //   Отправляем имя получателя
-        if (msgsnd(client_id, &msg, sizeof(struct message), 0) == -1) {
-          err_exit("msgsnd send");
-        }
 
-        print_to_win(chat_sem, GUI.text_bar_box, "Enter message: ");
-        read_from_win(GUI.text_bar_box, msg.mtext, MAX_MSG);
+        reprint_to_win(chat_sem, GUI.text_bar_box, 1, 2, "Enter message: ");
+
 
         //   Отправляем текст сообщение
-        if (msgsnd(client_id, &msg, sizeof(struct message), 0) == -1) {
-          err_exit("msgsnd send");
-        }
 
-        // printf("Сообщение:\n%s\n", msg.mtext);
         break;
       case 4:
         // Отправляем запрос на отключение от чата
@@ -100,7 +92,7 @@ void *sender() {
         printf("Вы успешно вышли из чата.\n");
         exit(0);
       default:
-        print_to_win(chat_sem, GUI.text_bar_box, "Wrong option.\n");
+        reprint_to_win(chat_sem, GUI.text_bar_box, 1, 2, "Wrong option.\n");
         wrefresh(GUI.text_bar_box);
     }
   }
@@ -139,9 +131,12 @@ int main() {
   if (sem_userlist_key == -1) err_exit("ftok");
   userlist_sem = semget(sem_userlist_key, 1, 0);
   if (userlist_sem == -1) err_exit("semget");
+  printf("userlist_shm %d\n", userlist_shm);
+  printf("chat_shm %d\n", chat_shm);
 
   printf("Enter name: ");
   fgets(Username, MAX_USERNAME, stdin);
+  print_to_addr(userlist_addr, userlist_sem, Username);
 
   // Отправляем запрос на регистрацию в чате
 
@@ -151,9 +146,10 @@ int main() {
   users_area();
   chat_area();
   text();
-
   sender();
-
+  //pthread_create(&send_tid, NULL, &sender, NULL);
+  //pthread_create(&recive_tid, NULL, &reciver_msg, NULL);
+  
   endwin();
 
   return 0;

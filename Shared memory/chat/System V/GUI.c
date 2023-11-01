@@ -1,8 +1,9 @@
 #include "GUI.h"
 
-
 struct LISTING listing[LISTING_MAX]; 
 extern struct GUI GUI;
+extern struct sembuf unlock_sem;
+extern struct sembuf lock_sem;
 
 char cmdoutlines[MAXROW][MAXCOL];
 int   ncmdlines,    //  Количество строк в cmdoutlines
@@ -133,24 +134,3 @@ void navigation(){
     break;
   }
 }
-
-/*
-int main(){
-  char c;
-  curses_init();
-  text();
-  chat_area();
-  users_area();
-  //runls();
-  //showlastpart();
-  winrow--;
-  highlight();
-  while (1)
-  {
-    c = getch();
-    if (c == 'q') break;
-  }
-  endwin();
-  return 0;
-}
-*/
