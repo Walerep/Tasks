@@ -1,14 +1,13 @@
 #ifndef HEADER_H
 #define HEADER_H
 
-#include <stdio.h>    //  perror printf
-#include <stdlib.h>   //  exit
-#include <string.h>   //  strcpy
-#include <sys/ipc.h>  //  ftok
-#include <sys/msg.h>  //  msgsnd
-#include <unistd.h>   //  getpid
 #include <semaphore.h>  // sem
-// #include <sys/types.h>  //
+#include <stdio.h>      //  perror printf
+#include <stdlib.h>     //  exit
+#include <string.h>     //  strcpy
+#include <sys/ipc.h>    //  ftok
+#include <sys/msg.h>    //  msgsnd
+#include <unistd.h>     //  getpid
 #include <errno.h>    //  perror
 #include <pthread.h>  //  pthread_create
 

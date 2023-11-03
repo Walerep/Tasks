@@ -5,8 +5,6 @@
 #include <stdlib.h>   //  exit
 #include <string.h>   //  strcpy
 #include <sys/ipc.h>  //  ftok
-#include <sys/msg.h>  //  msgsnd*
-#include <unistd.h>   //  getpid*
 #include <sys/types.h>  //
 #include <errno.h>    //  perror
 #include <pthread.h>  //  pthread_create
@@ -27,12 +25,5 @@ char Username[MAX_USERNAME];  //  пока храним имя пользова�
 
 char Message_buff[MAX_MSG];  //  буффер для вводимых сообщений
 
-
-//  структура для хранения клиентов
-struct client {
-  long id;                  //  id отправителя (id = msqid)
-  char name[MAX_USERNAME];  //  Имя отправителя
-  // int msgqid;          //  id очереди клиента
-};
 
 #endif

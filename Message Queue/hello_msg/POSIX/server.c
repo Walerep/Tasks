@@ -3,7 +3,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define err_exit(msg) do {perror(msg); exit(EXIT_FAILURE);} while(0)
+#define err_exit(msg)   \
+  do {                  \
+    perror(msg);        \
+    exit(EXIT_FAILURE); \
+  } while (0)
 
 #define MAX_MSG 256
 
@@ -17,15 +21,15 @@ int main() {
   attr.mq_curmsgs = 0;
 
   mqd = mq_open("/test_queue", O_CREAT | O_RDWR, 0600, &attr);  //  Open queue
-  if (mqd == (mqd_t) -1) err_exit("mqd");
-  mq_send(mqd, "Hello!", MAX_MSG, 0);                           //  Send msg
+  if (mqd == (mqd_t)-1) err_exit("mqd");
+  mq_send(mqd, "Hello!", MAX_MSG, 0);  //  Send msg
   if (mqd == -1) err_exit("mq_send");
-  mq_receive(mqd, buff, MAX_MSG, NULL);                         //  Recive msg
+  mq_receive(mqd, buff, MAX_MSG, NULL);  //  Recive msg
   if (mqd == -1) err_exit("mq_recive");
   printf("Client send: %s\n", buff);
-  mq_close(mqd);                                                //  Close msg queue descriptor
+  mq_close(mqd);  //  Close msg queue descriptor
   if (mqd == -1) err_exit("mq_close");
-  mq_unlink("/test_queue");                                     //  Remove queue
+  mq_unlink("/test_queue");  //  Remove queue
   if (mqd == -1) err_exit("mq_unlink");
-  return 0;  
+  return 0;
 }

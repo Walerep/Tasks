@@ -7,16 +7,10 @@
     exit(EXIT_FAILURE); \
   } while (0)
 
-struct client clients[MAX_USERS];
-int num_clients = -1;
-
-
-int server_sem;
 
 
 int main() {
   printf("server\n");
-
 
   // Генерируем уникальный ключ
   userlist_key = ftok(FTOK_PATH_ULK, 3);

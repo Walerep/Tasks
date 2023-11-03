@@ -25,7 +25,7 @@ int main() {
   if (queue_id == -1) err_exit("msgget");
   struct msg_buf send_msg,  //  структура для исходящего сообщения
       res_msg;  //  структура для входящего сообщения
-  
+
   snprintf(send_msg.mtext, MSG_SIZE, "%s\n", "Client msg : Hi");
   if (msgsnd(queue_id, &send_msg, sizeof(send_msg.mtext), 0) == -1)
     err_exit("msgsnd");  //  отправка сообщения

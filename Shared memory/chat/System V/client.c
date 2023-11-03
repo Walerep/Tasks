@@ -38,26 +38,20 @@ void *sender() {
   Enter option num: ");
 
     echo();
-
     wrefresh(GUI.text_bar_box);
     int choice;
-
     wscanw(GUI.text_bar_box, "%d", &choice);
-
-    // scanf("%d", &choice);
-
-    // getchar();  // Чтение символа новой строки после ввода числа
     noecho();
+
     switch (choice) {
       case 1:
-        // Отправляем запрос на получение списка активных пользователей
-        reciver_msg();
-        // Получаем список активных пользователей от сервера
+        // Вызов функции получения сообщений
 
+        reciver_msg();
 
         break;
       case 2:
-        // Отправляем запрос на отправку сообщения всем пользователям
+        // Отправляем сообщение всем пользователям
 
         char full_msg[MAX_MSG];
         char msg_buf[MAX_TEXT];
@@ -71,20 +65,7 @@ void *sender() {
         break;
       case 3:
 
-        //  Отправка запроса
-
-        //  Вводим имя получателя
-
-        reprint_to_win(chat_sem, GUI.text_bar_box, 1, 2, "Enter reciver name: ");
-
-
-        //   Отправляем имя получателя
-
-        reprint_to_win(chat_sem, GUI.text_bar_box, 1, 2, "Enter message: ");
-
-
-        //   Отправляем текст сообщение
-
+        
         break;
       case 4:
         // Отправляем запрос на отключение от чата
@@ -138,15 +119,15 @@ int main() {
   fgets(Username, MAX_USERNAME, stdin);
   print_to_addr(userlist_addr, userlist_sem, Username);
 
-  // Отправляем запрос на регистрацию в чате
-
-  // sleep(3);
+  // Запуск окон и функции отправки
 
   curses_init();
   users_area();
   chat_area();
   text();
   sender();
+
+  //  !!каким то образом надо подружить потоки и шареную память!!
   //pthread_create(&send_tid, NULL, &sender, NULL);
   //pthread_create(&recive_tid, NULL, &reciver_msg, NULL);
   

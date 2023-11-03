@@ -46,7 +46,6 @@ void curses_init(){
 void chat_area(){ 
   GUI.chat_window_box = newpad(LINES-BORDER_OF_MENU,COLS/1.5);
   scrollok(GUI.chat_window_box, TRUE);
-  //GUI.chat_window = derwin(GUI.chat_window_box, 1, 0, 1, 2);
 
   box (GUI.chat_window_box,'|','-');
   prefresh(GUI.chat_window_box, 0, 0, 0, 0, LINES-BORDER_OF_MENU, COLS/1.5);
@@ -62,7 +61,6 @@ void users_area(){
 // Окно навигации / ввода сообщения
 void text(){  
   GUI.text_bar_box = newwin(0,0,LINES-BORDER_OF_MENU,0);
-  //GUI.text_bar = derwin(GUI.text_bar_box, 1,0,1,2);
   box(GUI.text_bar_box,'|','-');
   wrefresh(GUI.text_bar_box);
 };
@@ -109,28 +107,5 @@ void read_from_win(WINDOW * target_win, char * format, int n){
 }
 
 void navigation(){
-  //text();
-  int cursor_y; //координаты курсора
-  int cursor_x;
-  getyx(stdscr, cursor_y, cursor_x);
-  switch (getch())
-  { 
-    /*
-  case KEY_UP:
-    move(cursor_y - 1, cursor_x);
-    break;
-  case KEY_RIGHT:
-    move(cursor_y, cursor_x + 1);
-    break;
-  case KEY_DOWN:
-    move(cursor_y + 1, cursor_x);
-    break;
-  case KEY_LEFT:
-    move(cursor_y, cursor_x -1 );
-    break;
-    */
-  case KEY_F(3):
-    endwin();
-    break;
-  }
+
 }

@@ -38,7 +38,6 @@ int main() {
   munmap(shmbuff, MAX_MSG);
 
   // Уничтожаем проецированный буффер и разделенную память
-  //shm_unlink(SHM_PATH);
   sem_close(sem1);
   sem_close(sem2);
   return 0;  

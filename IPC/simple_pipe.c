@@ -4,7 +4,11 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define err_exit(msg) do {perror(msg); exit(EXIT_FAILURE);} while(0)
+#define err_exit(msg)   \
+  do {                  \
+    perror(msg);        \
+    exit(EXIT_FAILURE); \
+  } while (0)
 
 void msg_transfer(char *msg) {
   char buff;
@@ -12,11 +16,11 @@ void msg_transfer(char *msg) {
   if (pipe(pipefd) == -1) {
     err_exit("pipe");
   }
-  write(pipefd[1], msg, strlen(msg));     //  записывает сообщение в канал
-  close(pipefd[1]);                       // закрывает канал на запись
+  write(pipefd[1], msg, strlen(msg));  //  записывает сообщение в канал
+  close(pipefd[1]);  // закрывает канал на запись
 
-  while (read(pipefd[0], &buff, 1) > 0)   //  пока в канале чтения что то есть
-    write(1, &buff, 1);                   //  хаписывет в стандартный поток
+  while (read(pipefd[0], &buff, 1) > 0)  //  пока в канале чтения что то есть
+    write(1, &buff, 1);  //  хаписывет в стандартный поток
   close(pipefd[0]);
   printf("\n");
   wait(NULL);
