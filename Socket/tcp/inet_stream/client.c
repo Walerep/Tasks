@@ -1,9 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-
 #include "shared_params.h"
 
 #define err_exit(msg)   \
@@ -17,7 +11,7 @@
 
 int main() {
   int fd_server;
-  struct sockaddr_un server;
+  struct sockaddr_in server;
 
   char msg[] = "Hello\n";
   char recv_buf[BUFFER_SIZE];
@@ -27,8 +21,9 @@ int main() {
   if (fd_server == -1) err_exit("socet creation fail");
 
   //  Настройка адреса сервера
-  server.sun_family = DOMAIN_TYPE;
-  strncpy(server.sun_path, SOCK_NAME, sizeof(server.sun_path) - 1);
+  server.sin_family = DOMAIN_TYPE;
+  server.sin_port = htons(PORT_NUM);
+  server.sin_addr.s_addr = htonl(INADDR_ANY);
 
   //  Соединение с сервером
   if (connect(fd_server, (struct sockaddr *)&server, sizeof(server)) < 0)

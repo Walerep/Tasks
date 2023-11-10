@@ -1,23 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-
 #include "shared_params.h"
 
-#define err_exit(msg)   \
-  do {                  \
-    perror(msg);        \
-    exit(EXIT_FAILURE); \
-  } while (0)
-
-#define MAX_CLIENTS 5
-#define BUFFER_SIZE 1024
-
 int main() {
-  int fd_server;
-  struct sockaddr_un server;
+  int fd_server, status;
+  struct sockaddr_in server, client;
 
   char msg[] = "Hello\n";
   char recv_buf[BUFFER_SIZE];
@@ -26,13 +11,14 @@ int main() {
   fd_server = socket(DOMAIN_TYPE, SOCK_TYPE, 0);
   if (fd_server == -1) err_exit("socet creation fail");
 
-  //  Настройка адреса сервера
-  server.sun_family = DOMAIN_TYPE;
-  strncpy(server.sun_path, SOCK_NAME, sizeof(server.sun_path) - 1);
+  //  Настройка сокета клиента
+  server.sin_family = DOMAIN_TYPE;
+  server.sin_port = htons(PORT_NUM);
+  server.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
   //  Соединение с сервером
-  if (connect(fd_server, (struct sockaddr *)&server, sizeof(server)) < 0)
-    err_exit("connection fail");
+  status = connect(fd_server, (struct sockaddr *)&server, sizeof(server));
+  if (status < 0) err_exit("connect fail");
 
   printf("Connected to server...\n");
 
