@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for N in {1..1000}
+for N in {1..100}
 do
   ./client
 done

@@ -10,6 +10,7 @@ void * client_handler(void *arg) {
   time_t cur_time = time(NULL);
   //  Отправка сообщения
   pid_t pid = getpid();
+  sleep(0.2);
   printf("SENDING FROM PID : %d\n", pid);
   if (send(fd_client, &cur_time, sizeof(cur_time), 0) < 0) thread_err_exit("send fail");
   //  Закрытие дескриптора
